@@ -347,7 +347,25 @@ Use this checklist to verify everything works:
 
 ---
 
+## 5. ✅ Third-Party Library Fix - MMKV
+
+**Problem Found:** The app was using MMKV 1.3.9, which contained `libmmkv.so` with 4KB page alignment.
+
+**Solution:**
+Updated MMKV dependency in `/app/build.gradle`:
+```groovy
+// Updated from 1.3.9 to 2.0.1 for 16KB page size support
+implementation 'com.tencent:mmkv:2.0.1'
+```
+
+MMKV 2.0+ includes native libraries built with 16KB page size support and is fully backward compatible.
+
+**Status:** ✅ Fixed - See [MMKV_16KB_FIX.md](MMKV_16KB_FIX.md) for details
+
+---
+
 **Last Updated:** November 24, 2025  
-**Compliance Status:** ✅ FULLY COMPLIANT  
-**Published Version:** 3.3.8-rc1
+**Compliance Status:** ✅ FULLY COMPLIANT (All Libraries)  
+**Published Version:** 3.3.8-rc1  
+**Critical Fix:** MMKV updated to 2.0.1 for 16KB support
 
