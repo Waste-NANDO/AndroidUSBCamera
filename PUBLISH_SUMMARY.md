@@ -45,8 +45,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/NicoMederoReLearn/AndroidUSBCamera")
         credentials {
-            username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")
-            password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")
+            username = project.findProperty("github.actor")
+            password = project.findProperty("github.token")
         }
     }
 }
@@ -62,8 +62,8 @@ dependencies {
 
 **Note:** Users need to add their GitHub credentials to `local.properties`:
 ```properties
-gpr.user=THEIR_GITHUB_USERNAME
-gpr.token=THEIR_PERSONAL_ACCESS_TOKEN
+github.actor=THEIR_GITHUB_USERNAME
+github.token=THEIR_PERSONAL_ACCESS_TOKEN
 ```
 
 ### Building Locally
@@ -80,10 +80,11 @@ cd AndroidUSBCamera
 
 **See GITHUB_PACKAGES_GUIDE.md for detailed instructions**
 
-Quick command (requires GitHub token):
+Quick command (requires credentials in local.properties):
 ```bash
-export GITHUB_ACTOR=NicoMederoReLearn
-export GITHUB_TOKEN=your_personal_access_token
+# Make sure local.properties has:
+# github.actor=NicoMederoReLearn
+# github.token=your_personal_access_token
 ./gradlew publish
 ```
 

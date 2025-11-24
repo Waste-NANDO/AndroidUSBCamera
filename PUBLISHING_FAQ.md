@@ -37,8 +37,11 @@ cd /Users/elhopaness/Documents/Laburo/ReLearn/AndroidUSBCamera
 # - Click "Generate token"
 # - SAVE THE TOKEN!
 
-# 3. Set your token and run the script
-export GITHUB_TOKEN=ghp_your_token_here
+# 3. Set your token in local.properties
+echo "github.actor=NicoMederoReLearn" >> local.properties
+echo "github.token=ghp_your_token_here" >> local.properties
+
+# 4. Run the trigger script
 ./trigger-publish.sh
 ```
 
@@ -59,9 +62,10 @@ This will trigger the GitHub Actions workflow immediately!
 # Create token with 'write:packages' scope at:
 # https://github.com/settings/tokens
 
-# Add to local.properties
-echo "gpr.user=NicoMederoReLearn" >> local.properties
-echo "gpr.token=YOUR_TOKEN" >> local.properties
+# Add to local.properties:
+echo "github.actor=NicoMederoReLearn" >> local.properties
+echo "github.token=YOUR_TOKEN" >> local.properties
+
 
 # Publish
 ./gradlew publish
@@ -152,7 +156,9 @@ Since you just committed to master and want to publish:
 
 **Use the trigger script:**
 ```bash
-export GITHUB_TOKEN=your_token
+# Make sure local.properties has your credentials:
+# github.actor=NicoMederoReLearn
+# github.token=your_token
 ./trigger-publish.sh
 ```
 

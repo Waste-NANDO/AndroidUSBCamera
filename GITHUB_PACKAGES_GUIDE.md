@@ -13,8 +13,9 @@ Your AndroidUSBCamera library is now configured to publish to GitHub Packages. T
 ```bash
 cd /Users/elhopaness/Documents/Laburo/ReLearn/AndroidUSBCamera
 
-# Set your GitHub token (needs 'repo' and 'workflow' scopes)
-export GITHUB_TOKEN=your_personal_access_token
+# Make sure local.properties has your credentials
+# github.actor=NicoMederoReLearn
+# github.token=your_personal_access_token
 
 # Run the trigger script
 ./trigger-publish.sh
@@ -53,8 +54,8 @@ The script will trigger the workflow and provide links to monitor progress.
 
 2. **Add credentials to local.properties:**
    ```bash
-   echo "gpr.user=NicoMederoReLearn" >> local.properties
-   echo "gpr.token=YOUR_TOKEN_HERE" >> local.properties
+   echo "github.actor=NicoMederoReLearn" >> local.properties
+   echo "github.token=YOUR_TOKEN_HERE" >> local.properties
    ```
    
    Replace `YOUR_TOKEN_HERE` with your actual token.
@@ -76,8 +77,8 @@ The script will trigger the workflow and provide links to monitor progress.
        maven {
            url = uri("https://maven.pkg.github.com/NicoMederoReLearn/AndroidUSBCamera")
            credentials {
-               username = System.getenv("GITHUB_ACTOR") ?: project.findProperty("gpr.user")
-               password = System.getenv("GITHUB_TOKEN") ?: project.findProperty("gpr.token")
+               username = project.findProperty("github.actor")
+               password = project.findProperty("github.token")
            }
        }
    }
@@ -85,8 +86,8 @@ The script will trigger the workflow and provide links to monitor progress.
 
 2. **Add your GitHub credentials** to `local.properties`:
    ```properties
-   gpr.user=YOUR_GITHUB_USERNAME
-   gpr.token=YOUR_PERSONAL_ACCESS_TOKEN
+   github.actor=YOUR_GITHUB_USERNAME
+   github.token=YOUR_PERSONAL_ACCESS_TOKEN
    ```
 
 3. **Add dependencies** (in `app/build.gradle`):

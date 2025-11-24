@@ -14,16 +14,30 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}🚀 GitHub Packages Publishing Script${NC}"
 echo ""
 
-# Check if GITHUB_TOKEN is set
-if [ -z "$GITHUB_TOKEN" ]; then
-    echo -e "${RED}❌ Error: GITHUB_TOKEN environment variable is not set${NC}"
+# Check if local.properties has github.token
+if [ ! -f "local.properties" ]; then
+    echo -e "${RED}❌ Error: local.properties file not found${NC}"
     echo ""
-    echo "Please create a Personal Access Token with 'repo' and 'workflow' scopes:"
+    echo "Please create local.properties with your GitHub credentials:"
+    echo "  github.actor=YOUR_USERNAME"
+    echo "  github.token=YOUR_TOKEN"
+    echo ""
+    echo "Create a Personal Access Token with 'repo' and 'workflow' scopes:"
     echo "  https://github.com/settings/tokens"
+    exit 1
+fi
+
+GITHUB_TOKEN=$(grep "github.token=" local.properties | cut -d'=' -f2)
+
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo -e "${RED}❌ Error: github.token not found in local.properties${NC}"
     echo ""
-    echo "Then run:"
-    echo "  export GITHUB_TOKEN=your_token_here"
-    echo "  ./trigger-publish.sh"
+    echo "Please add your GitHub token to local.properties:"
+    echo "  github.actor=YOUR_USERNAME"
+    echo "  github.token=YOUR_TOKEN"
+    echo ""
+    echo "Create a Personal Access Token with 'repo' and 'workflow' scopes:"
+    echo "  https://github.com/settings/tokens"
     exit 1
 fi
 

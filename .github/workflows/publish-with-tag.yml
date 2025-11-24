@@ -69,11 +69,13 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
+      - name: Setup credentials
+        run: |
+          echo "github.actor=${{ github.actor }}" >> local.properties
+          echo "github.token=${{ secrets.GITHUB_TOKEN }}" >> local.properties
+
       - name: Publish to GitHub Packages
         run: ./gradlew publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Create GitHub Release
         if: inputs.create_release == true && steps.check_tag.outputs.EXISTS == 'false'

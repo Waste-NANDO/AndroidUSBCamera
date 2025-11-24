@@ -59,17 +59,19 @@ case $choice in
         echo ""
         echo "🔨 Building and publishing locally..."
 
-        if ! grep -q "gpr.user" local.properties 2>/dev/null; then
+        if ! grep -q "github.actor" local.properties 2>/dev/null; then
             echo ""
             echo "⚠️  GitHub credentials not found in local.properties"
             echo ""
             read -p "Enter your GitHub username: " gh_user
             read -s -p "Enter your GitHub token (with write:packages): " gh_token
             echo ""
-            echo "gpr.user=$gh_user" >> local.properties
-            echo "gpr.token=$gh_token" >> local.properties
+            echo "github.actor=$gh_user" >> local.properties
+            echo "github.token=$gh_token" >> local.properties
             echo "✅ Credentials saved to local.properties"
             echo ""
+        else
+            echo "✅ Using github.actor credentials from local.properties"
         fi
 
         ./gradlew clean publish
