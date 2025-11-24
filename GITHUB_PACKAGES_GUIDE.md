@@ -7,11 +7,26 @@ Your AndroidUSBCamera library is now configured to publish to GitHub Packages. T
 
 ### Method 1: Using GitHub Actions (Recommended)
 
-1. **Commit and push the changes:**
+**Important:** The workflow publishes the version defined in `build.gradle` (currently `3.3.5`). It does NOT automatically create Git tags.
+
+#### Option A: Trigger via Script (Easiest)
+```bash
+cd /Users/elhopaness/Documents/Laburo/ReLearn/AndroidUSBCamera
+
+# Set your GitHub token (needs 'repo' and 'workflow' scopes)
+export GITHUB_TOKEN=your_personal_access_token
+
+# Run the trigger script
+./trigger-publish.sh
+```
+
+The script will trigger the workflow and provide links to monitor progress.
+
+#### Option B: Trigger via GitHub UI
+1. **Commit and push your changes:**
    ```bash
-   cd /Users/elhopaness/Documents/Laburo/ReLearn/AndroidUSBCamera
    git add .
-   git commit -m "Configure GitHub Packages publishing"
+   git commit -m "Your commit message"
    git push origin master
    ```
 

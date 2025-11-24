@@ -1,0 +1,124 @@
+name: Publish with Auto-Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_tag:
+        description: 'Create Git tag (uses version from build.gradle)'
+        required: true
+        type: boolean
+        default: true
+      create_release:
+        description: 'Create GitHub Release'
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to create tags and releases
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Extract version from build.gradle
+        id: version
+        run: |
+          VERSION=$(grep "versionNameString = " build.gradle | sed "s/.*versionNameString = '\(.*\)'/\1/")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.VERSION }}" >/dev/null 2>&1; then
+            echo "EXISTS=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag v${{ steps.version.outputs.VERSION }} already exists"
+          else
+            echo "EXISTS=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag v${{ steps.version.outputs.VERSION }} does not exist"
+          fi
+
+      - name: Create Git tag
+        if: inputs.create_tag == true && steps.check_tag.outputs.EXISTS == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.VERSION }}" -m "Release v${{ steps.version.outputs.VERSION }}"
+          git push origin "v${{ steps.version.outputs.VERSION }}"
+          echo "✅ Created and pushed tag v${{ steps.version.outputs.VERSION }}"
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+
+      - name: Publish to GitHub Packages
+        run: ./gradlew publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+
+      - name: Create GitHub Release
+        if: inputs.create_release == true && steps.check_tag.outputs.EXISTS == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          release_name: Release v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## AndroidUSBCamera v${{ steps.version.outputs.VERSION }}
+            
+            ### Published Packages
+            - `com.nando.androidusbcamera:libausbc:${{ steps.version.outputs.VERSION }}`
+            - `com.nando.androidusbcamera:libuvc:${{ steps.version.outputs.VERSION }}`
+            - `com.nando.androidusbcamera:libnative:${{ steps.version.outputs.VERSION }}`
+            
+            ### Installation
+            See [GITHUB_PACKAGES_GUIDE.md](https://github.com/${{ github.repository }}/blob/master/GITHUB_PACKAGES_GUIDE.md) for usage instructions.
+          draft: false
+          prerelease: false
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-v${{ steps.version.outputs.VERSION }}
+          path: |
+            libausbc/build/outputs/aar/*.aar
+            libuvc/build/outputs/aar/*.aar
+            libnative/build/outputs/aar/*.aar
+
+      - name: Summary
+        run: |
+          echo "## 🎉 Publishing Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Published Packages" >> $GITHUB_STEP_SUMMARY
+          echo "- com.nando.androidusbcamera:libausbc:${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- com.nando.androidusbcamera:libuvc:${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- com.nando.androidusbcamera:libnative:${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Packages](https://github.com/${{ github.repository }}/packages)" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ inputs.create_tag }}" == "true" ]; then
+            echo "- [View Tag](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.VERSION }})" >> $GITHUB_STEP_SUMMARY
+          fi
+
