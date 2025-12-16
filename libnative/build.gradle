@@ -53,7 +53,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.findByName('release') ?: components.findByName('java')
+                from components.findByName('release')
                 groupId = 'com.nando.androidusbcamera'
                 artifactId = 'libnative'
                 version = rootProject.ext.versionNameString
