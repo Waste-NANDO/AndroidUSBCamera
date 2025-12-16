@@ -48,10 +48,49 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.findByName('release')
                 groupId = 'com.nando.androidusbcamera'
                 artifactId = 'libausbc'
                 version = rootProject.ext.versionNameString
+
+                // Explicitly add the AAR artifact
+                artifact bundleReleaseAar
+
+                // Add POM dependencies manually since we're not using components
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+
+                    configurations.api.allDependencies.each { dep ->
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+
+                        // Handle project dependencies
+                        if (dep instanceof ProjectDependency) {
+                            dependencyNode.appendNode('groupId', 'com.nando.androidusbcamera')
+                            dependencyNode.appendNode('artifactId', dep.dependencyProject.name)
+                            dependencyNode.appendNode('version', rootProject.ext.versionNameString)
+                        } else if (dep.group != null && dep.name != null) {
+                            dependencyNode.appendNode('groupId', dep.group)
+                            dependencyNode.appendNode('artifactId', dep.name)
+                            dependencyNode.appendNode('version', dep.version)
+                        }
+                        dependencyNode.appendNode('scope', 'compile')
+                    }
+
+                    configurations.implementation.allDependencies.each { dep ->
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+
+                        // Handle project dependencies
+                        if (dep instanceof ProjectDependency) {
+                            dependencyNode.appendNode('groupId', 'com.nando.androidusbcamera')
+                            dependencyNode.appendNode('artifactId', dep.dependencyProject.name)
+                            dependencyNode.appendNode('version', rootProject.ext.versionNameString)
+                        } else if (dep.group != null && dep.name != null) {
+                            dependencyNode.appendNode('groupId', dep.group)
+                            dependencyNode.appendNode('artifactId', dep.name)
+                            dependencyNode.appendNode('version', dep.version)
+                        }
+                        dependencyNode.appendNode('scope', 'runtime')
+                    }
+                }
             }
         }
         repositories {

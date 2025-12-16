@@ -53,10 +53,27 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                from components.findByName('release')
                 groupId = 'com.nando.androidusbcamera'
                 artifactId = 'libnative'
                 version = rootProject.ext.versionNameString
+
+                // Explicitly add the AAR artifact
+                artifact bundleReleaseAar
+
+                // Add POM dependencies manually since we're not using components
+                pom.withXml {
+                    def dependenciesNode = asNode().appendNode('dependencies')
+
+                    configurations.implementation.allDependencies.each {
+                        if (it.group != null && it.name != null) {
+                            def dependencyNode = dependenciesNode.appendNode('dependency')
+                            dependencyNode.appendNode('groupId', it.group)
+                            dependencyNode.appendNode('artifactId', it.name)
+                            dependencyNode.appendNode('version', it.version)
+                            dependencyNode.appendNode('scope', 'runtime')
+                        }
+                    }
+                }
             }
         }
         repositories {
