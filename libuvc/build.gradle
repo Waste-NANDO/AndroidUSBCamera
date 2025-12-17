@@ -114,7 +114,7 @@ afterEvaluate {
 		repositories {
 			maven {
                 name = "GitHub"
-				url = uri("https://maven.pkg.github.com/NicoMederoReLearn/AndroidUSBCamera")
+				url = uri("https://maven.pkg.github.com/Waste-NANDO/AndroidUSBCamera")
 				credentials {
 					username = project.findProperty("github.actor") ?: ""
 					password = project.findProperty("github.token") ?: ""
