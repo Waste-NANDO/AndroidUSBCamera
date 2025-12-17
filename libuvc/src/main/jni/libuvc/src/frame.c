@@ -52,12 +52,34 @@
 #include "libuvc/libuvc_internal.h"
 
 #define USE_STRIDE 1
+
+// Helper function for aligned memory allocation (16KB page support)
+static inline void* aligned_malloc(size_t size) {
+	if (size == 0) return NULL;
+	void* ptr = NULL;
+	// Align to 16KB (16384 bytes) for 16KB page size support
+	if (posix_memalign(&ptr, 16384, size) != 0) {
+		return NULL;
+	}
+	return ptr;
+}
+
+
 /** @internal */
 uvc_error_t uvc_ensure_frame_size(uvc_frame_t *frame, size_t need_bytes) {
 	if LIKELY(frame->library_owns_data) {
 		if UNLIKELY(!frame->data || frame->data_bytes != need_bytes) {
+			size_t old_size = frame->data_bytes;
 			frame->actual_bytes = frame->data_bytes = need_bytes;	// XXX
-			frame->data = realloc(frame->data, frame->data_bytes);
+			void* new_data = aligned_malloc(need_bytes);
+			if (new_data && frame->data && old_size > 0) {
+				// Copy old data to new aligned buffer
+				memcpy(new_data, frame->data, old_size < need_bytes ? old_size : need_bytes);
+				free(frame->data);
+			} else if (frame->data) {
+				free(frame->data);
+			}
+			frame->data = new_data;
 		}
 		if (UNLIKELY(!frame->data || !need_bytes))
 			return UVC_ERROR_NO_MEM;
@@ -76,7 +98,8 @@ uvc_error_t uvc_ensure_frame_size(uvc_frame_t *frame, size_t need_bytes) {
  * @return New frame, or NULL on error
  */
 uvc_frame_t *uvc_allocate_frame(size_t data_bytes) {
-	uvc_frame_t *frame = malloc(sizeof(*frame));	// FIXME using buffer pool is better performance(5-30%) than directory use malloc everytime.
+	// Use aligned malloc for the frame structure itself for better cache performance
+	uvc_frame_t *frame = aligned_malloc(sizeof(*frame));	// FIXME using buffer pool is better performance(5-30%) than directory use malloc everytime.
 
 	if (UNLIKELY(!frame))
 		return NULL;
@@ -91,7 +114,8 @@ uvc_frame_t *uvc_allocate_frame(size_t data_bytes) {
 	if (LIKELY(data_bytes > 0)) {
 		frame->library_owns_data = 1;
 		frame->actual_bytes = frame->data_bytes = data_bytes;	// XXX
-		frame->data = malloc(data_bytes);
+		// Use aligned malloc for frame data to support 16KB pages
+		frame->data = aligned_malloc(data_bytes);
 
 		if (UNLIKELY(!frame->data)) {
 			free(frame);
