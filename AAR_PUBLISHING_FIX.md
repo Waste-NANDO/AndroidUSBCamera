@@ -1,7 +1,7 @@
 # AAR Publishing Fix - Technical Explanation
 
 ## Date
-December 16, 2024
+December 16, 2025
 
 ## Problem Summary
 When publishing Android library modules to GitHub Packages, the AAR files were not being included in the publication. Only POM and module metadata files were being uploaded, causing `ClassNotFoundException` errors in consumer projects.
