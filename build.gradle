@@ -44,7 +44,7 @@ ext {
     versionTarget = 27
     minSdkVersion = 23  // Updated from 21 for MMKV 2.x compatibility
     versionCode = 141
-    versionNameString = '3.3.8-rc18'
+    versionNameString = '3.3.8'
     javaSourceCompatibility = JavaVersion.VERSION_1_8
     javaTargetCompatibility = JavaVersion.VERSION_1_8
 //    ndkVersion = '21.0.6113669'
